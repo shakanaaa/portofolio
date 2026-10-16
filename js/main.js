@@ -625,16 +625,16 @@ function setIndex(index) {
 // 5. Wavy Ripple Geometric Math & Screen Transition Engine
 // --------------------------------------------------------------------------
 function generateWavyPolygon(
-  cx, 
-  cy, 
-  r, 
-  numPoints = 72, 
-  waves1 = 7, 
-  amp1 = 0.085, 
-  waves2 = 14, 
-  amp2 = 0.035, 
-  phase = 0.0, 
-  scaleX = 1.25, 
+  cx,
+  cy,
+  r,
+  numPoints = 48,
+  waves1 = 7,
+  amp1 = 0.085,
+  waves2 = 14,
+  amp2 = 0.035,
+  phase = 0.0,
+  scaleX = 1.25,
   scaleY = 1.05
 ) {
   if (r <= 0.5) {
@@ -748,10 +748,8 @@ function executeWavyReveal({
   pageEl.classList.add("circle-transitioning");
   pageEl.setAttribute("aria-hidden", "false");
 
-  // Pause main menu background video while subpage is displayed to eliminate dual-video GPU decode load
-  if (bgVideoLoop && !bgVideoLoop.paused) {
-    bgVideoLoop.pause();
-  }
+  // Keep background video loop running continuously
+  // Only pause subpage videos to reduce GPU load
 
   if (videoEl) {
     videoEl.currentTime = 0;
@@ -760,19 +758,19 @@ function executeWavyReveal({
   }
 
   const anim = pageEl.animate([
-    { 
-      clipPath: generateWavyPolygon(origin.x, origin.y, 0, 72, 7, 0.085, 14, 0.035, 0.0, 1.25, 1.05) 
+    {
+      clipPath: generateWavyPolygon(origin.x, origin.y, 0, 48, 7, 0.085, 14, 0.035, 0.0, 1.25, 1.05)
     },
-    { 
-      clipPath: generateWavyPolygon(origin.x + 22, origin.y - 12, targetRadius * 0.45, 72, 7, 0.09, 14, 0.035, 1.2, 1.25, 1.05),
+    {
+      clipPath: generateWavyPolygon(origin.x + 22, origin.y - 12, targetRadius * 0.45, 48, 7, 0.09, 14, 0.035, 1.2, 1.25, 1.05),
       offset: 0.38
     },
-    { 
-      clipPath: generateWavyPolygon(origin.x + 10, origin.y - 5, targetRadius * 0.85, 72, 7, 0.075, 14, 0.025, 2.2, 1.20, 1.05),
+    {
+      clipPath: generateWavyPolygon(origin.x + 10, origin.y - 5, targetRadius * 0.85, 48, 7, 0.075, 14, 0.025, 2.2, 1.20, 1.05),
       offset: 0.70
     },
-    { 
-      clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius, 72, 7, 0.05, 14, 0.015, 3.4, 1.15, 1.02) 
+    {
+      clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius, 48, 7, 0.05, 14, 0.015, 3.4, 1.15, 1.02)
     }
   ], {
     duration,
@@ -817,19 +815,19 @@ function executeWavyClose({
   pageEl.classList.add("circle-transitioning");
 
   const anim = pageEl.animate([
-    { 
-      clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, targetRadius, 72, 9, 0.07, 18, 0.025, 0.0, 1.15, 1.25) 
+    {
+      clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, targetRadius, 48, 9, 0.07, 18, 0.025, 0.0, 1.15, 1.25)
     },
-    { 
-      clipPath: generateWavyPolygon(exitOrigin.x - 20, exitOrigin.y - 12, targetRadius * 0.80, 72, 9, 0.08, 18, 0.03, 1.0, 1.15, 1.25),
+    {
+      clipPath: generateWavyPolygon(exitOrigin.x - 20, exitOrigin.y - 12, targetRadius * 0.80, 48, 9, 0.08, 18, 0.03, 1.0, 1.15, 1.25),
       offset: 0.32
     },
-    { 
-      clipPath: generateWavyPolygon(exitOrigin.x - 28, exitOrigin.y - 18, targetRadius * 0.42, 72, 9, 0.085, 18, 0.03, 2.0, 1.15, 1.25),
+    {
+      clipPath: generateWavyPolygon(exitOrigin.x - 28, exitOrigin.y - 18, targetRadius * 0.42, 48, 9, 0.085, 18, 0.03, 2.0, 1.15, 1.25),
       offset: 0.65
     },
-    { 
-      clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, 0, 72, 9, 0.08, 18, 0.025, 3.0, 1.15, 1.25) 
+    {
+      clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, 0, 48, 9, 0.08, 18, 0.025, 3.0, 1.15, 1.25)
     }
   ], {
     duration,
@@ -842,10 +840,7 @@ function executeWavyClose({
     pageEl.style.clipPath = "";
     pageEl.setAttribute("aria-hidden", "true");
     if (videoEl) videoEl.pause();
-    // Resume main menu loop video seamlessly
-    if (bgVideoLoop && bgVideoLoop.paused) {
-      bgVideoLoop.play().catch(() => {});
-    }
+    // Background video loop stays running continuously
     try { anim.cancel(); } catch (_) {}
     isWavyTransitionRunning = false;
     if (onComplete) onComplete();
@@ -932,8 +927,9 @@ function confirmSlinkSelection() {
   const item = slinkData[selectedSlinkIndex];
   if (item && item.url && item.url !== "#") {
     playSFX();
+    // Navigate to GitHub repo with slight delay for SFX
     setTimeout(() => {
-      window.location.href = item.url;
+      window.open(item.url, '_blank');
     }, 200);
   } else {
     playSFX();
@@ -1240,9 +1236,9 @@ function openModal(index) {
   const targetRadius = calculateTargetRadius(origin);
 
   const keyframes = [
-    { clipPath: generateWavyPolygon(origin.x, origin.y, 0, 100, 6, 0.08, 12, 0.03, 0.0, 1.25, 1.05) },
-    { clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius * 0.45, 100, 6, 0.085, 12, 0.03, 1.0, 1.25, 1.05), offset: 0.4 },
-    { clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius, 100, 6, 0.05, 12, 0.015, 2.5, 1.15, 1.02) }
+    { clipPath: generateWavyPolygon(origin.x, origin.y, 0, 48, 6, 0.08, 12, 0.03, 0.0, 1.25, 1.05) },
+    { clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius * 0.45, 48, 6, 0.085, 12, 0.03, 1.0, 1.25, 1.05), offset: 0.4 },
+    { clipPath: generateWavyPolygon(origin.x, origin.y, targetRadius, 48, 6, 0.05, 12, 0.015, 2.5, 1.15, 1.02) }
   ];
 
   portfolioModal.animate(keyframes, {
@@ -1261,8 +1257,8 @@ function closeModal() {
   const targetRadius = calculateTargetRadius(exitOrigin);
 
   const closeAnim = portfolioModal.animate([
-    { clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, targetRadius, 100, 8, 0.07, 16, 0.025, 0.0, 1.15, 1.25) },
-    { clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, 0, 100, 8, 0.08, 16, 0.02, 2.5, 1.15, 1.25) }
+    { clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, targetRadius, 48, 8, 0.07, 16, 0.025, 0.0, 1.15, 1.25) },
+    { clipPath: generateWavyPolygon(exitOrigin.x, exitOrigin.y, 0, 48, 8, 0.08, 16, 0.02, 2.5, 1.15, 1.25) }
   ], {
     duration: 600,
     easing: "cubic-bezier(0.2, 1, 0.35, 1)",
